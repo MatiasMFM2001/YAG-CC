@@ -31,12 +31,12 @@
 {{/* MAIN CODE : READ COMMENTS!! */}}
 {{if eq (index (cslice "poop"| or .CmdArgs) 0| lower) "team"}}
     {{if len $slots | gt $slotThreshold}}
-        {{if len .Message.Mentions| gt $mentionThreshold}}
+        {{if len .Message.Mentions| gt $mentionThreshold}}{{$ids}}
             {{range (cslice .User).AppendSlice .Message.Mentions -}}
                 {{- if in $ids .ID -}}
                     {{- $valid = false -}}
                 {{- end}}
-                {{$ids := $ids.Append .ID}}
+                {{$ids = $ids.Append .ID}}
                 {{$members = $members.Append .ID}}
             {{- end}}
             {{if not $valid}}
