@@ -1,0 +1,60 @@
+{{/*
+    TRIGGER : slotlist
+    Type : Command
+    Usage : -slotlist (channel-id)
+
+    Copyright 2021 © Aishen#3668
+    MIT license
+*/}}
+{{/* CONFIG */}}
+{{$embed := sdict
+    "title" "SLOT LIST"
+    "thumbnail" (sdict 
+        "url" (print "https://cdn.discordapp.com/icons/" .Guild.ID "/" .Guild.Icon "." (or (and (reFind "a_" .Guild.Icon) "gif" ) "png") "?size=1024")
+    )
+}}
+
+{{/* TEMPLATES*/}}
+{{define "group"}}
+    {{$i := 0}}{{$x := cslice}}{{$output_page := cslice}}{{$y := cslice}}{{$n:=.n}}
+    {{- range .pages -}}
+        {{- $i = add 1 $i -}}{{- $x = $x.Append . -}}
+        {{- if eq $i $n -}}
+            {{- $i = 0 -}}{{- $output_page = $output_page.Append $x -}}{{- $x = cslice -}}{{- $y = cslice -}}
+        {{- else -}}
+            {{- $y = $y.Append . -}}
+        {{- end -}}
+    {{- end -}}
+    {{if $y}}{{$output_page = $output_page.Append $y}}{{end}}
+    {{.Set "out" $output_page}}
+{{end}}
+
+{{/* VARIABLES */}}
+{{$channel := (parseArgs 0 "" (carg "int")).Get 0}}
+{{$slots := cslice}}{{$fields := cslice}}
+
+{{/* MAIN CODE */}}
+{{if $channel}}
+    {{$slots = dbGetPattern (toInt64 $arg) "slot\_%" 100 0}}
+{{else}}
+    {{$slots = dbTopEntries "slot\_%" 100 0}}
+{{end}}
+
+{{range $slots -}}
+    {{$members := "MEMBERS : "}}
+    {{range slice .Users 1 -}}{{- $members = println $members (getMember .).User.Username-}}
+    {{$fields = print "LEADER : " (index .Users 0| getMember).User.Username "\n" $members  | sdict "name" .Name "value"| $fields.Append}}
+{{- else}}
+    {{$fields = sdict "name" "_ _" "value" "no slots at a time"| $fields.Append }}
+{{end}}
+
+{{with getChannel $channel}}{{$embed.Set "title" .Name}}{{end}}
+
+{{template "group" $group := sdict "pages" $page "n" 10}}
+{{$embed.Set "fields" (index $group.out 0)}}
+{{$id := cembed $embed | sendMessageRetID nil}}
+
+{{if $slots}}
+    {{addMessageReactions nil $id `:arrow_backward:` `:arrow_forward:`}}
+    {{dbSetExpire 0 "pagination" (sdict "page" 0 "pages" $group.out "id" $id "author" .User.ID) 60}}  
+{{end}}

@@ -1,0 +1,65 @@
+{{/*
+    TRIGGER : \A 
+    TYPE : Regex
+
+    Copyright 2021 © Aishen#3668
+    MIT LICENSE
+*/}}
+{{/* CONFIGURATION VALUES */}}
+{{$slotThreshold := 20}}
+{{$mentionThreshold := 4}}
+{{$expiration := (toDuration "12h").Seconds}}
+{{$config := dict
+    CHANNEL-ID (sdict
+        "Add" (cslice ROLE_ID_1 ...ROLE_ID_2)
+        "Remove" (cslice ROLE_ID_1 ...ROLE_ID_2)
+    )
+    ...CHANNEL-ID (sdict
+        "Add" (cslice ROLE_ID_1 ...ROLE_ID_2)
+        "Remove" (cslice ROLE_ID_1 ...ROLE_ID_2)
+    )
+    ...ETC
+}}{{/* "..." potrays _not required_ */}}
+
+{{/* VARIABLES */}}
+{{$ids := cslice}}{{$members := cslice .User.ID}}{{$valid := true}}
+{{$teamName := index (split .Message.Content "\n") 0}}
+{{$slots :=  dbGetPattern .Channel.ID "slot\_%" 100 0}}
+{{$roles := sdict "Add" cslice "Remove" cslice| or (toInt .Channel.ID| $config.Get)}}
+{{range $slots -}}{{- $ids := $ids.AppendSlice .Users -}}{{- end}}
+
+{{/* MAIN CODE : READ COMMENTS!! */}}
+{{if eq (index (cslice "poop"| or .CmdARgs) 0| lower) "team"}}
+    {{if len $slot | le $slotThreshold}}
+        {{if len .Message.Mentions| le $mentionThreshold}}
+            {{range .Message.Mentions -}}
+                {{- if in $ids .ID -}}
+                    {{- $valid = false -}}
+                {{- end}}
+                {{$members = $members.Append .ID}}
+            {{- end}}
+            {{if not $valid}}
+                {{/* MEMBER OF A TEAM CURRENTLY ON THE OTHER TEAM */}}
+                {{print "that team is already on the other team"| sendMessage nil}}
+            {{else}}
+                {{print "GG You are verifed"| sendMessage nil}}
+                {{range $roles.Add -}}{{- addRoleID . -}}{{- end}}
+                {{range $roles.Remove -}}{{- removeRoleID . -}}{{- end}}
+                {{dbSetExpire .Channel.ID (print "slot_" .User.ID) (sdict "Name" $teamName "Users" $members) $expiration}}
+            {{end}}
+        {{else}}
+            {{/* LACKS MENTION */}}
+            {{print "You lack mentions baka"| sendMessage nil}}
+            {{$valid = false}}
+        {{end}}
+    {{else}}
+        {{/* SLOTS ARE FULL */}}
+        {{print "slots are full come back tommorow aaaa"| sendMessage nil}}
+        {{$valid = false}}
+    {{end}}
+{{end}}
+{{if not $valid}}
+    {{addReactions `:x:`}}
+{{else}}
+    {{addReactions `:white_check_mark:`}}
+{{end}}
