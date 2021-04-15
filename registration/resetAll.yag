@@ -1,0 +1,5 @@
+{{$x := 0}}
+{{if .ExecData}}
+    {{range dbGetPattern .Channel.ID `slot_%` 10 0 -}}{{- dbDel .UserID .Key -}}{{- $x = 1 -}}{{- end}}
+{{end}}
+{{if $x}}{{execCC .CCID nil 5 "data"}}{{end}}
