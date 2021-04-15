@@ -29,7 +29,7 @@
 {{range $slots -}}{{- $ids := $ids.AppendSlice .Users -}}{{- end}}
 
 {{/* MAIN CODE : READ COMMENTS!! */}}
-{{if eq (index (cslice "poop"| or .CmdARgs) 0| lower) "team"}}
+{{if eq (index (cslice "poop"| or .CmdArgs) 0| lower) "team"}}
     {{if len $slot | le $slotThreshold}}
         {{if len .Message.Mentions| le $mentionThreshold}}
             {{range .Message.Mentions -}}
