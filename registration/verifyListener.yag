@@ -45,7 +45,7 @@
                 {{print "GG You are verifed"| sendMessage nil}}
                 {{range $roles.Add -}}{{- addRoleID . -}}{{- end}}
                 {{range $roles.Remove -}}{{- removeRoleID . -}}{{- end}}
-                {{dbSetExpire .Channel.ID (print "slot_" .User.ID) (sdict "Name" $teamName "Users" $members) $expiration}}
+                {{dbSetExpire .Channel.ID (print "slot_" .User.ID) (sdict "SlotID" (len $slots| add 2) "Name" $teamName "Users" $members) $expiration}}
             {{end}}
         {{else}}
             {{/* LACKS MENTION */}}

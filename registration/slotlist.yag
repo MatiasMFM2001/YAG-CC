@@ -31,7 +31,7 @@
 
 {{/* VARIABLES */}}
 {{$channel := (parseArgs 0 "" (carg "int")).Get 0}}
-{{$slots := cslice}}{{$fields := cslice}}
+{{$slots := cslice}}{{$fields := cslice (sdict "name" "Vacant" "Not to be used")}}
 
 {{/* MAIN CODE */}}
 {{if $channel}}
@@ -43,14 +43,14 @@
 {{range $slots -}}
     {{$members := "MEMBERS : "}}
     {{range slice .Users 1 -}}{{- $members = println $members (getMember .).User.Username-}}
-    {{$fields = print "LEADER : " (index .Users 0| getMember).User.Username "\n" $members  | sdict "name" .Name "value"| $fields.Append}}
+    {{$fields = print "LEADER : " (index .Users 0| getMember).User.Username "\n" $members  | sdict "name" (print .SlotID "# " .Name) "value"| $fields.Append}}
 {{- else}}
     {{$fields = sdict "name" "_ _" "value" "no slots at a time"| $fields.Append }}
 {{end}}
 
 {{with getChannel $channel}}{{$embed.Set "title" .Name}}{{end}}
 
-{{template "group" $group := sdict "pages" $page "n" 10}}
+{{template "group" $group := sdict "pages" $page "n" 25}}
 {{$embed.Set "fields" (index $group.out 0)}}
 {{$id := cembed $embed | sendMessageRetID nil}}
 
