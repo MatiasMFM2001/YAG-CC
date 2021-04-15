@@ -36,6 +36,7 @@
                 {{- if in $ids .ID -}}
                     {{- $valid = false -}}
                 {{- end}}
+                {{$ids := $ids.Append .ID}}
                 {{$members = $members.Append .ID}}
             {{- end}}
             {{if not $valid}}
