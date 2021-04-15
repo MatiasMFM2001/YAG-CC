@@ -1,0 +1,1 @@
+too lazy to make readme lol contact me Aishen#3668 if ya want some help install this set of custom commands
