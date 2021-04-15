@@ -50,7 +50,7 @@
 
 {{with getChannel $channel}}{{$embed.Set "title" .Name}}{{end}}
 
-{{template "group" $group := sdict "pages" $page "n" 25}}
+{{template "group" $group := sdict "pages" $fields "n" 25}}
 {{$embed.Set "fields" (index $group.out 0)}}
 {{$id := cembed $embed | sendMessageRetID nil}}
 
