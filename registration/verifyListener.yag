@@ -2,13 +2,13 @@
     TRIGGER : \A 
     TYPE : Regex
 
-    Copyright 2021 © Aishen#3668
+    Copyright (c) 2021 kunaishen
     MIT LICENSE
 */}}
 {{/* CONFIGURATION VALUES */}}
 {{$slotThreshold := 20}}
 {{$mentionThreshold := 4}}
-{{$expiration := (toDuration "12h").Seconds}}
+{{$expiration := (toDuration "12h").Seconds | toInt}}
 {{$config := dict
     CHANNEL-ID (sdict
         "Add" (cslice ROLE_ID_1 ...ROLE_ID_2)
@@ -24,15 +24,15 @@
 {{/* VARIABLES */}}
 {{$ids := cslice}}{{$members := cslice .User.ID}}{{$valid := true}}
 {{$teamName := index (split .Message.Content "\n") 0}}
-{{$slots :=  dbGetPattern .Channel.ID "slot\_%" 100 0}}
+{{$slots :=  dbGetPattern .Channel.ID `slot_%` 100 0}}
 {{$roles := sdict "Add" cslice "Remove" cslice| or (toInt .Channel.ID| $config.Get)}}
-{{range $slots -}}{{- $ids := $ids.AppendSlice .Users -}}{{- end}}
+{{range $slots -}}{{- $ids = $ids.AppendSlice .Value.Users -}}{{- end}}
 
 {{/* MAIN CODE : READ COMMENTS!! */}}
 {{if eq (index (cslice "poop"| or .CmdArgs) 0| lower) "team"}}
-    {{if len $slot | le $slotThreshold}}
-        {{if len .Message.Mentions| le $mentionThreshold}}
-            {{range .Message.Mentions -}}
+    {{if len $slots | gt $slotThreshold}}
+        {{if len .Message.Mentions| gt $mentionThreshold}}
+            {{range (cslice .User).AppendSlice .Message.Mentions -}}
                 {{- if in $ids .ID -}}
                     {{- $valid = false -}}
                 {{- end}}
@@ -42,6 +42,7 @@
                 {{/* MEMBER OF A TEAM CURRENTLY ON THE OTHER TEAM */}}
                 {{print "that team is already on the other team"| sendMessage nil}}
             {{else}}
+                {{addReactions `:white_check_mark:`}}
                 {{print "GG You are verifed"| sendMessage nil}}
                 {{range $roles.Add -}}{{- addRoleID . -}}{{- end}}
                 {{range $roles.Remove -}}{{- removeRoleID . -}}{{- end}}
@@ -60,6 +61,4 @@
 {{end}}
 {{if not $valid}}
     {{addReactions `:x:`}}
-{{else}}
-    {{addReactions `:white_check_mark:`}}
 {{end}}

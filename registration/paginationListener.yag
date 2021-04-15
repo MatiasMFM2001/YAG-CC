@@ -4,7 +4,7 @@
     Type : Reaction/Added reactions
 
     MIT License
-    Copyright 2021 © Aishen#3668
+    Copyright (c) 2021 kunaishen
 */}}
 {{if $db:=(dbGet 0 "pagination").Value}}
     {{if and .ReactionAdded .Message.Embeds (eq $db.id .Message.ID) (eq .User.ID $db.author)}}
